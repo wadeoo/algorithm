@@ -1238,6 +1238,16 @@ public:
         return res;
     }
 
+    struct TreeNode
+    {
+        int val;
+        TreeNode *left;
+        TreeNode *right;
+        TreeNode() : val(0), left(nullptr), right(nullptr) {}
+        TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+        TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+    };
+
     // 144二叉树前序遍历
     void traversal(TreeNode * cur, vector<int> & result)
     {
@@ -1719,30 +1729,272 @@ public:
         {
             return 0;
         }
-        return countNodes(root->left) + countNodes(root->right)+1;
+        return countNodes(root->left) + countNodes(root->right) + 1;
     }
-    //迭代法
-    int countNodes(TreeNode * root){
-        if(!root){
+    // 迭代法
+    int countNodes(TreeNode * root)
+    {
+        if (!root)
+        {
             return 0;
         }
-        deque<TreeNode*> que;
-        int count=0;
+        deque<TreeNode *> que;
+        int count = 0;
         que.push_back(root);
-        while(!que.empty()){
-            int size=que.size();
-            while(size--){
-                TreeNode* front=que.front();  
+        while (!que.empty())
+        {
+            int size = que.size();
+            while (size--)
+            {
+                TreeNode *front = que.front();
                 que.pop_front();
                 count++;
-                if(front->left){
+                if (front->left)
+                {
                     que.push_back(front->left);
                 }
-                if(front->right){
+                if (front->right)
+                {
                     que.push_back(front->right);
                 }
             }
         }
         return count;
+    }
+    // 222 完全二叉树的节点个数(利用完全二叉树特性的解法)
+    int countNodes(TreeNode * root)
+    {
+        if (!root)
+        {
+            return 0;
+        }
+        TreeNode *left = root->left;
+        TreeNode *right = root->right;
+        int leftLength = 0, rightLength = 0;
+        while (left)
+        {
+            left = left->left;
+            leftLength++;
+        }
+        while (right)
+        {
+            right = right->right;
+            rightLength++;
+        }
+        if (rightLength == leftLength)
+        {
+            return (1 << (leftLength + 1)) - 1;
+        }
+        else
+        {
+            return countNodes(root->left) + countNodes(root->right) + 1;
+        }
+    }
+
+    // 110 平衡二叉树
+    int getHeight(TreeNode * node)
+    {
+        if (!node)
+        {
+            return 0;
+        }
+        return max(getHeight(node->left), getHeight(node->right)) + 1;
+    }
+    bool isBalanced(TreeNode * root)
+    {
+        if (!root)
+        {
+            return true;
+        }
+        if (abs(getHeight(root->left) - getHeight(root->right)) > 1)
+        {
+            return false;
+        }
+        else
+        {
+            return isBalanced(root->left) && isBalanced(root->right);
+        }
+    }
+    // 迭代法
+    bool isBalanced(TreeNode * root)
+    {
+        stack<TreeNode *> stack;
+        if (!root)
+        {
+            return true;
+        }
+        stack.push(root);
+        while (!stack.empty())
+        {
+            TreeNode *top = stack.top();
+            stack.pop();
+            if (abs(getHeight(top->left) - getHeight(top->right)) > 1)
+            {
+                return false;
+            }
+            else
+            {
+                if (top->left)
+                    stack.push(top->left);
+                if (top->right)
+                    stack.push(top->right);
+            }
+        }
+        return true;
+    }
+
+    // 257.二叉树的所有路径
+    void traversal(TreeNode * cur, vector<int> & path, vector<string> & result)
+    {
+
+        if (!cur->left && !cur->right)
+        {
+            string str;
+            for (int i = 0; i < path.size(); i++)
+            {
+                str += to_string(path[i]);
+                str += "->";
+            }
+            str += to_string(cur->val);
+            result.push_back(str);
+            return;
+        }
+
+        path.push_back(cur->val);
+        if (cur->left)
+        {
+            traversal(cur->left, path, result);
+        }
+        if (cur->right)
+        {
+            traversal(cur->right, path, result);
+        }
+        path.pop_back();
+    }
+    vector<string> binaryTreePaths(TreeNode * root)
+    {
+        vector<string> result;
+        vector<int> path;
+        traversal(root, path, result);
+        return result;
+    }
+
+    // 左叶子之和
+    int sumOfLeftLeaves(TreeNode * root)
+    {
+        if (!root->left && !root->right)
+        {
+            return 0;
+        }
+        stack<TreeNode *> stack;
+        stack.push(root);
+        int sum = 0;
+        while (!stack.empty())
+        {
+            TreeNode *top = stack.top();
+            stack.pop();
+            if (top->left)
+            {
+                if (!top->left->left && !top->left->right)
+                {
+                    sum += top->left->val;
+                }
+                else
+                {
+                    stack.push(top->left);
+                }
+            }
+            if (top->right)
+            {
+                if (top->right->left || top->right->right)
+                {
+                    stack.push(top->right);
+                }
+            }
+        }
+        return sum;
+    }
+    // 递归法
+    int sumOfLeftLeaves(TreeNode * root)
+    {
+        if (!root || !root->left && !root->right)
+        {
+            return 0;
+        }
+        if (root->left)
+        {
+            if (!root->left->left && !root->left->right)
+            {
+                return root->left->val + sumOfLeftLeaves(root->right);
+            }
+            else
+            {
+                return sumOfLeftLeaves(root->left) + sumOfLeftLeaves(root->right);
+            }
+        }
+        else
+        {
+            return sumOfLeftLeaves(root->right);
+        }
+    }
+
+    // 513找树左下角的值 递归法
+    int getHeight(TreeNode * node)
+    {
+        if (!node)
+        {
+            return 0;
+        }
+        return max(getHeight(node->left), getHeight(node->right)) + 1;
+    }
+    int findBottomLeftValue(TreeNode * root)
+    {
+        if(!root->left&&!root->right){
+            return root->val;
+        }
+        if(root->left){
+            if(root->left->left||root->left->right){
+                if(getHeight(root->left)<getHeight(root->right)){
+                    return findBottomLeftValue(root->right);
+                }
+                return findBottomLeftValue(root->left);
+            }else{
+                if(root->right&&(root->right->left||root->right->right)){
+                    return findBottomLeftValue(root->right);
+                }else{
+                    return findBottomLeftValue(root->left);
+                }
+            }
+        }else{
+            return findBottomLeftValue(root->right);
+        }
+
+    }
+    // 层序遍历(迭代法)
+    int findBottomLeftValue(TreeNode * root)
+    {
+        deque<TreeNode *> que;
+        que.push_back(root);
+        int result = 0;
+        while (!que.empty())
+        {
+            int size = que.size();
+            int i=size;
+            while (i--)
+            {
+                TreeNode *front = que.front();
+                que.pop_front();
+                if(i==size-1)result = front->val;
+                if (front->left)
+                {
+                    que.push_back(front->left);
+                }
+                if (front->right)
+                {
+                    que.push_back(front->right);
+                }
+            }
+        }
+        return result;
     }
 }
