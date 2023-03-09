@@ -1949,26 +1949,36 @@ public:
     }
     int findBottomLeftValue(TreeNode * root)
     {
-        if(!root->left&&!root->right){
+        if (!root->left && !root->right)
+        {
             return root->val;
         }
-        if(root->left){
-            if(root->left->left||root->left->right){
-                if(getHeight(root->left)<getHeight(root->right)){
+        if (root->left)
+        {
+            if (root->left->left || root->left->right)
+            {
+                if (getHeight(root->left) < getHeight(root->right))
+                {
                     return findBottomLeftValue(root->right);
                 }
                 return findBottomLeftValue(root->left);
-            }else{
-                if(root->right&&(root->right->left||root->right->right)){
+            }
+            else
+            {
+                if (root->right && (root->right->left || root->right->right))
+                {
                     return findBottomLeftValue(root->right);
-                }else{
+                }
+                else
+                {
                     return findBottomLeftValue(root->left);
                 }
             }
-        }else{
+        }
+        else
+        {
             return findBottomLeftValue(root->right);
         }
-
     }
     // 层序遍历(迭代法)
     int findBottomLeftValue(TreeNode * root)
@@ -1979,12 +1989,13 @@ public:
         while (!que.empty())
         {
             int size = que.size();
-            int i=size;
+            int i = size;
             while (i--)
             {
                 TreeNode *front = que.front();
                 que.pop_front();
-                if(i==size-1)result = front->val;
+                if (i == size - 1)
+                    result = front->val;
                 if (front->left)
                 {
                     que.push_back(front->left);
@@ -1995,6 +2006,527 @@ public:
                 }
             }
         }
+        return result;
+    }
+
+    // 112 路径总和
+    bool hasPathSum(TreeNode * root, int targetSum)
+    {
+        if (!root)
+        {
+            return false;
+        }
+        if (!root->left && !root->right)
+        {
+            return root->val == targetSum;
+        }
+        if (root->left)
+        {
+            return hasPathSum(root->left, targetSum - root->val) || hasPathSum(root->right, targetSum - root->val);
+        }
+        else
+        {
+            return hasPathSum(root->right, targetSum - root->val);
+        }
+    }
+
+    // 106 从中序与后序遍历序列构造二叉树(递归法)
+    TreeNode *buildTree(vector<int> & inorder, vector<int> & postorder)
+    {
+        if (postorder.size() == 0)
+        {
+            return nullptr;
+        }
+        if (postorder.size() == 1)
+        {
+            TreeNode *node = new TreeNode(postorder.back());
+            return node;
+        }
+        int backOfPost = postorder.back();
+        int delimiter;
+        for (delimiter = 0; delimiter < inorder.size(); delimiter++)
+        {
+            if (inorder[delimiter] == backOfPost)
+            {
+                break;
+            }
+        }
+        postorder.pop_back();
+        vector<int> nextLeftInorder(inorder.begin(), delimiter + inorder.begin());
+        vector<int> nextRightInorder(inorder.begin() + delimiter + 1, inorder.end());
+        vector<int> nextLeftPostorder(postorder.begin(), nextLeftInorder.size() + postorder.begin());
+        vector<int> nextRightPostorder(postorder.begin() + nextLeftPostorder.size(), postorder.end());
+        TreeNode *node = new TreeNode(backOfPost);
+        node->left = buildTree(nextLeftInorder, nextLeftPostorder);
+        node->right = buildTree(nextRightInorder, nextRightPostorder);
+        return node;
+    }
+
+    // 654 最大二叉树
+    TreeNode *constructMaximumBinaryTree(vector<int> & nums)
+    {
+        // 终止条件
+        if (nums.empty())
+        {
+            return nullptr;
+        }
+        TreeNode *node;
+        if (nums.size() == 1)
+        {
+            return node = new TreeNode(nums[0]);
+        }
+        // 单层逻辑
+        int max = INT_MIN;
+        int maxIndex = 0;
+        for (int i = 0; i < nums.size(); i++)
+        {
+            if (max < nums[i])
+            {
+                maxIndex = i;
+                max = nums[i];
+            }
+        }
+        node = new TreeNode(max);
+        vector<int> leftNums(nums.begin(), nums.begin() + maxIndex);
+        vector<int> rightNums(nums.begin() + maxIndex + 1, nums.end());
+        node->left = constructMaximumBinaryTree(leftNums);
+        node->right = constructMaximumBinaryTree(rightNums);
+        return node;
+    }
+
+    // 617合并二叉树
+    TreeNode *mergeTrees(TreeNode * root1, TreeNode * root2)
+    {
+        if (!root1 && !root2)
+        {
+            return nullptr;
+        }
+        if (!root2)
+        {
+            return root1;
+        }
+        if (!root1)
+        {
+            return root2;
+        }
+        TreeNode *node = new TreeNode(root1->val + root2->val);
+        node->left = mergeTrees(root1->left, root2->left);
+        node->right = mergeTrees(root1->right, root2->right);
+        return node;
+    }
+
+    // 700 二叉搜索树中的搜索
+    TreeNode *searchBST(TreeNode * root, int val)
+    {
+        if (!root)
+        {
+            return nullptr;
+        }
+        if (root->val == val)
+        {
+            return root;
+        }
+        return root->val > val ? searchBST(root->left, val) : searchBST(root->right, val);
+    }
+    // 迭代法
+    TreeNode *searchBST(TreeNode * root, int val)
+    {
+        while (root)
+        {
+            if (root->val == val)
+            {
+                return root;
+            }
+            root = root->val > val ? root->left : root->right;
+        }
+        return nullptr;
+    }
+
+    // 98 验证二叉搜索树
+    void traversal(TreeNode * root, vector<int> & nums)
+    {
+        if (!root)
+        {
+            return;
+        }
+        traversal(root->left, nums);
+        nums.push_back(root->val);
+        traversal(root->right, nums);
+    }
+    bool isValidBST(TreeNode * root)
+    {
+        vector<int> nums;
+        traversal(root, nums);
+        for (int i = 0; i < nums.size() - 1; i++)
+        {
+            if (nums[i] >= nums[i + 1])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // 530 二叉树搜索树的最小绝对差
+    void traversal(TreeNode * root, vector<int> & nums)
+    {
+        if (!root)
+        {
+            return;
+        }
+        traversal(root->left, nums);
+        nums.push_back(root->val);
+        traversal(root->right, nums);
+    }
+    int getMinimumDifference(TreeNode * root)
+    {
+        vector<int> nums;
+        traversal(root, nums);
+        int min = INT_MAX;
+        for (int i = 0; i < nums.size() - 1; i++)
+        {
+            if (abs(nums[i] - nums[i + 1]) < min)
+            {
+                min = abs(nums[i] - nums[i + 1]);
+            }
+        }
+        return min;
+    }
+    // 方法二
+    int result = INT_MAX;
+    TreeNode *pre = nullptr;
+    void traversal(TreeNode * cur)
+    {
+        if (!cur)
+        {
+            return;
+        }
+        traversal(cur->left);
+        if (pre)
+        {
+            result = min(cur->val - pre->val, result);
+        }
+        pre = cur;
+        traversal(cur->right);
+    }
+    int getMinimumDifference(TreeNode * root)
+    {
+        traversal(root);
+        return result;
+    }
+
+    // 501 二叉搜索树中的众数
+    unordered_map<int, int> map; // key是节点值,value是节点出现次数
+    void traversal(TreeNode * root)
+    {
+        if (!root)
+        {
+            return;
+        }
+        traversal(root->left);
+        auto it = map.find(root->val);
+        if (it != map.end())
+        {
+            it->second++;
+        }
+        else
+        {
+            map.insert(pair<int, int>(root->val, 0));
+        }
+        traversal(root->right);
+    }
+    vector<int> findMode(TreeNode * root)
+    {
+        int max = 0;
+        vector<int> result;
+        traversal(root);
+        for (auto it = map.begin(); it != map.end(); it++)
+        {
+            max = max < it->second ? it->second : max;
+        }
+        for (auto it = map.begin(); it != map.end(); it++)
+        {
+            if (it->second == max)
+            {
+                result.push_back(it->first);
+            }
+        }
+        return result;
+    }
+
+    // 236 二叉树的最近公共祖先
+    TreeNode *lowestCommonAncestor(TreeNode * root, TreeNode * p, TreeNode * q)
+    {
+        if (root == p || root == q || !root)
+        {
+            return root;
+        }
+        TreeNode *left = lowestCommonAncestor(root->left, p, q);
+        TreeNode *right = lowestCommonAncestor(root->right, p, q);
+        if (left && right)
+        {
+            return root;
+        }
+        if (left)
+        {
+            return left;
+        }
+        return right;
+    }
+
+    // 235  二叉搜索树的最近公共祖先
+    TreeNode *lowestCommonAncestor(TreeNode * root, TreeNode * p, TreeNode * q)
+    {
+        if (root == p || root == q || !root)
+        {
+            return root;
+        }
+        if (root->val > p->val && root->val > q->val)
+        {
+            return lowestCommonAncestor(root->left, p, q);
+        }
+        if (root->val < p->val && root->val < q->val)
+        {
+            return lowestCommonAncestor(root->right, p, q);
+        }
+        return root;
+    }
+
+    // 701 二叉搜索树中的插入操作
+    void traversal(TreeNode * root, int val)
+    {
+        if (root->val > val)
+        {
+            if (!root->left)
+            {
+                root->left = TreeNode(val);
+                return;
+            }
+            return traversal(root->left, val);
+        }
+        if (root->val < val)
+        {
+            if (!root->right)
+            {
+                root->right = TreeNode(val);
+                return;
+            }
+            return traversal(root->right, val);
+        }
+    }
+    TreeNode *insertIntoBST(TreeNode * root, int val)
+    {
+        if (!root)
+        {
+            return root;
+        }
+        traversal(root, val);
+        return root;
+    };
+
+    // 669 修剪二叉搜索树
+    TreeNode *trimBST(TreeNode * root, int low, int high)
+    {
+        if (!root)
+        {
+            return nullptr;
+        }
+        if (root->val < low)
+        {
+            return trimBST(root->right, low, high);
+        }
+        if (root->val > high)
+        {
+            return trimBST(root->left, low, high);
+        }
+        root->left = trimBST(root->left, low, high);
+        root->right = trimBST(root->right, low, high);
+        return root;
+    }
+
+    // 108将有序数组转换为二叉搜索树
+    TreeNode *traversal(vector<int> & nums, int left, int right)
+    {
+        if (left > right)
+        {
+            return nullptr;
+        }
+        int middle = (right - left) / 2 + left;
+        TreeNode *node = new TreeNode(nums[middle]);
+        node->left = traversal(nums, left, middle - 1);
+        node->right = traversal(nums, middle + 1, right);
+        return node;
+    }
+
+    TreeNode *sortedArrayToBST(vector<int> & nums)
+    {
+        return traversal(nums, 0, nums.size() - 1);
+    }
+
+    // 538 把二叉搜索树转换为累加树
+    int pre = 0;
+    void traversal(TreeNode * cur)
+    {
+        if (!cur)
+        {
+            return;
+        }
+        traversal(cur->right);
+        cur->val += pre;
+        pre = cur->val;
+        traversal(cur->left);
+    }
+    TreeNode *convertBST(TreeNode * root)
+    {
+        if (!root)
+        {
+            return nullptr;
+        }
+        traversal(root);
+        return root;
+    }
+
+    // 77 组合
+    vector<vector<int>> result;
+    vector<int> path;
+    void backtracking(int n, int k, int startIndex)
+    {
+        if (path.size() == k)
+        {
+            result.push_back(path);
+            return;
+        }
+        for (int i = startIndex; i <= n - k + path.size() + 1; i++)
+        {
+            path.push_back(i);
+            backtracking(n, k, i + 1);
+            path.pop_back();
+        }
+    }
+    vector<vector<int>> combine(int n, int k)
+    {
+        backtracking(n, k, 1);
+        return result;
+    }
+
+    // 组合总和III
+    vector<int> path;
+    vector<vector<int>> result;
+    void backtracking(int k, int n, int startIndex)
+    {
+        // 终止条件
+        if (n == 0 && k == 0)
+        {
+            result.push_back(path);
+            return;
+        }
+        if (startIndex > n)
+        {
+            return;
+        }
+        // 单层逻辑
+        for (int i = startIndex; i <= 9 && i <= n; i++)
+        {
+            path.push_back(i);
+            backtracking(k - 1, n - i, i + 1);
+            path.pop_back();
+        }
+    }
+    vector<vector<int>> combinationSum3(int k, int n)
+    {
+        backtracking(k, n, 1);
+        return result;
+    }
+
+    // 17电话号码的字母组合
+    vector<string> buttons = {"abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
+    string str;
+    vector<string> result;
+    void backtracking(string digits, int num, int startIndex)
+    {
+        // 终止条件
+        if (num == 0)
+        {
+            if (!str.empty())
+            {
+                result.push_back(str);
+            }
+            return;
+        }
+        // 单层逻辑
+        string cur = buttons[digits[startIndex] - 50];
+        for (char ch : cur)
+        {
+            str.push_back(ch);
+            backtracking(digits, num - 1, startIndex + 1);
+            str.pop_back();
+        }
+    }
+    vector<string> letterCombinations(string digits)
+    {
+        backtracking(digits, digits.size(), 0);
+        return result;
+    }
+
+    // 39组合总和
+    class Solution
+    {
+    public:
+        vector<vector<int>> result;
+        vector<int> comb;
+        void backtracking(vector<int> &candidates, int target)
+        {
+            // 终止条件
+            if (target == 1 || target < 0)
+            {
+                return;
+            }
+            if (target == 0)
+            {
+                result.push_back(comb);
+                return;
+            }
+            // 单层逻辑
+            for (int e : candidates)
+            {
+                if(comb.empty()||!comb.empty()&&comb.back()>=e){
+                    comb.push_back(e);
+                }else{
+                    continue;
+                }
+                backtracking(candidates, target - e);
+                comb.pop_back();
+            }
+        }
+        vector<vector<int>> combinationSum(vector<int> &candidates, int target)
+        {
+            backtracking(candidates, target);
+            return result;
+        }
+    }
+
+
+    //40. 组合总和II
+    vector<vector<int>> result;
+    vector<int> comb;
+    void backtracking(vector<int>& candidates, int target,int startIndex){
+        if(target<0){
+            return;
+        }
+        if(target==0){
+            if(!comb.empty()){
+                result.push_back(comb);
+            }
+            return;
+        }
+        for(int i=startIndex;i<candidates.size();i++){
+            comb.push_back(candidates[i]);
+            backtracking(candidates,target-candidates[i],i+1);
+            comb.pop_back();
+        }
+    }
+    vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
+        backtracking(candidates,target,0);
         return result;
     }
 }
